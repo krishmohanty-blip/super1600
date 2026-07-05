@@ -1,2 +1,2 @@
-# super1600
-Super Mario Bros SAT Practice Game
+# Super Sixteen Hundred
+Super Mario Bros SAT Practice Game. Assistance from Claude Fable 5 was used.
