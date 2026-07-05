@@ -1,0 +1,1534 @@
+<title>Super Sixteen Hundred — SAT Platformer</title>
+<style>
+  :root{
+    --sky:#5C94FC;
+    --night:#10121D;
+    --paper:#FAFBF3;
+    --paper-ink:#242819;
+    --paper-form:#8A9878;
+    --paper-rule:#D6DCC6;
+    --gold:#F7A21B;
+    --good:#2F7D46;
+    --good-soft:#E2EEDF;
+    --bad:#C0392B;
+    --bad-soft:#F3E2DD;
+    --px:"Courier New",Courier,monospace;
+    --serif:Charter,"Iowan Old Style",Georgia,serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--night);
+    color:#fff;
+    font-family:var(--px);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:18px 10px 28px;
+  }
+  button{font:inherit;cursor:pointer}
+  button:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  #stage{
+    width:min(100%, 860px);
+    position:relative;
+  }
+  .cab-top{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:0 4px 8px;
+    font-weight:700;letter-spacing:.18em;font-size:11px;text-transform:uppercase;color:#5A6280;
+  }
+  .cab-top button{
+    background:none;border:0;color:#5A6280;font-weight:700;letter-spacing:.18em;
+    font-size:11px;text-transform:uppercase;padding:2px 4px;
+  }
+  .cab-top button:hover{color:#fff}
+
+  #frame{
+    position:relative;
+    border:4px solid #2A2F45;
+    border-radius:8px;
+    overflow:hidden;
+    background:var(--sky);
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  #cv{
+    display:block;
+    width:100%;
+    height:auto;
+    image-rendering:pixelated;
+    image-rendering:crisp-edges;
+  }
+
+  /* ---------- HUD ---------- */
+  #hud{
+    position:absolute;inset:0 0 auto 0;
+    display:flex;justify-content:space-between;gap:6px;
+    padding:8px 12px 0;
+    font-weight:700;
+    font-size:clamp(9px, 1.9vw, 15px);
+    letter-spacing:.08em;
+    color:#fff;
+    text-shadow:1.5px 1.5px 0 rgba(0,0,0,.55);
+    pointer-events:none;
+    text-transform:uppercase;
+  }
+  #hud .cell{text-align:center;line-height:1.35}
+  #hud .lab{display:block;font-size:.8em;opacity:.95}
+
+  /* ---------- overlays ---------- */
+  .overlay{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:14px;
+  }
+  .hidden{display:none !important}
+
+  /* title */
+  #title{background:var(--sky)}
+  #title .inner{width:min(94%,560px);text-align:center}
+  .logo{
+    background:#B5391F;
+    border:4px solid #7A1F0C;
+    border-radius:10px;
+    box-shadow:0 6px 0 rgba(0,0,0,.25), inset 0 0 0 3px #E8734E;
+    padding:22px 18px 18px;
+    margin-bottom:4px;
+  }
+  .logo .sup{
+    font-size:clamp(13px,2.6vw,19px);
+    letter-spacing:.5em;
+    font-weight:700;
+    color:#FFD9A0;
+    text-shadow:2px 2px 0 #7A1F0C;
+  }
+  .logo h1{
+    margin:6px 0 4px;
+    font-size:clamp(30px,6.4vw,54px);
+    line-height:1.02;
+    letter-spacing:.04em;
+    color:#FFF3D0;
+    text-shadow:3px 3px 0 #7A1F0C;
+    font-weight:700;
+    text-wrap:balance;
+  }
+  .logo .sub{
+    font-size:clamp(10px,1.9vw,13px);
+    letter-spacing:.3em;
+    font-weight:700;
+    color:#FFD9A0;
+    text-shadow:2px 2px 0 #7A1F0C;
+  }
+  .title-copy{
+    margin:14px auto 16px;
+    font-size:clamp(11px,2vw,14px);
+    line-height:1.7;
+    color:#0E2B6B;
+    font-weight:700;
+    letter-spacing:.04em;
+    max-width:48ch;
+  }
+  .worlds{display:flex;flex-direction:column;gap:8px;margin:0 auto 16px;max-width:420px}
+  .world-opt{
+    display:flex;align-items:center;gap:12px;
+    background:rgba(255,255,255,.88);
+    border:3px solid #0E2B6B;
+    border-radius:6px;
+    padding:9px 14px;
+    text-align:left;
+    color:#0E2B6B;
+    font-weight:700;
+    letter-spacing:.06em;
+    font-size:clamp(11px,2vw,14px);
+    box-shadow:0 3px 0 rgba(0,0,0,.25);
+  }
+  .world-opt small{display:block;font-weight:400;letter-spacing:.02em;opacity:.75;text-transform:none}
+  .world-opt .dot{
+    flex:none;width:16px;height:16px;border:3px solid #0E2B6B;border-radius:50%;
+    background:transparent;
+  }
+  .world-opt[aria-pressed="true"]{background:#FFE9A8}
+  .world-opt[aria-pressed="true"] .dot{background:#0E2B6B}
+  .start-btn{
+    background:#0E2B6B;
+    color:#FFE9A8;
+    border:0;
+    border-radius:6px;
+    box-shadow:0 4px 0 #071638;
+    padding:14px 34px;
+    font-weight:700;
+    font-size:clamp(13px,2.4vw,17px);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    animation:blink 1.1s steps(2) infinite;
+  }
+  .start-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #071638}
+  @keyframes blink{50%{opacity:.55}}
+  .controls-note{
+    margin-top:14px;
+    font-size:clamp(9px,1.7vw,11.5px);
+    letter-spacing:.14em;
+    color:#0E2B6B;
+    font-weight:700;
+    opacity:.8;
+  }
+
+  /* question modal = the test paper interrupting the arcade */
+  #qmodal{background:rgba(8,10,20,.72)}
+  .paper{
+    background:var(--paper);
+    color:var(--paper-ink);
+    width:min(96%,560px);
+    max-height:92%;
+    overflow-y:auto;
+    border:3px solid var(--paper-ink);
+    box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--paper-ink),0 20px 60px rgba(0,0,0,.55);
+    padding:22px 26px 24px;
+    font-family:var(--px);
+    font-weight:700;
+    font-size:14.5px;
+    line-height:1.65;
+  }
+  .paper .eyebrow{
+    font-family:var(--px);
+    font-weight:700;
+    font-size:10.5px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    color:var(--paper-form);
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    margin-bottom:14px;
+  }
+  .paper .stem{margin:0 0 18px;font-size:14.5px;letter-spacing:.02em;max-width:58ch}
+  .paper .stem .math{font-size:1em}
+  .qopts{display:flex;flex-direction:column;gap:8px}
+  .qopt{
+    display:flex;align-items:center;gap:14px;
+    background:none;border:2px solid transparent;border-radius:0;
+    text-align:left;color:inherit;
+    padding:7px 10px;margin:0 -10px;
+    font-family:var(--px);font-weight:700;font-size:13.5px;
+  }
+  .qopt:hover:not(:disabled){background:rgba(138,152,120,.16);border-color:var(--paper-form)}
+  .qopt:disabled{cursor:default}
+  .qopt .bub{
+    flex:none;width:26px;height:26px;border-radius:0;
+    border:2px solid var(--paper-ink);
+    background:var(--paper);
+    box-shadow:2px 2px 0 rgba(36,40,25,.25);
+    display:inline-flex;align-items:center;justify-content:center;
+    position:relative;
+  }
+  .qopt .bub::after{
+    content:"";position:absolute;inset:3px;border-radius:0;
+    background:var(--paper-ink);transform:scale(0);
+    transition:transform .12s steps(3,end);
+  }
+  .qopt .txt .math{font-size:1em}
+  .qopt.is-correct{background:var(--good-soft);border-color:var(--good)}
+  .qopt.is-correct .bub{border-color:var(--good);color:var(--good)}
+  .qopt.is-correct .bub::after{background:var(--good);transform:scale(1)}
+  .qopt.is-wrong{background:var(--bad-soft);border-color:var(--bad)}
+  .qopt.is-wrong .bub{border-color:var(--bad);color:var(--bad)}
+  .qopt.is-wrong .bub::after{background:var(--bad);transform:scale(1)}
+  .qopts.answered .qopt:not(.is-correct):not(.is-wrong){opacity:.4}
+  .qkeyhint{
+    font-family:var(--px);font-weight:700;font-size:9.5px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--paper-form);margin:10px 0 0;
+  }
+  .akey{border-top:2px dashed var(--paper-form);margin-top:16px;padding-top:14px;display:none}
+  .akey.show{display:block;animation:rise .22s ease-out}
+  @keyframes rise{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .akey .verdict{
+    font-family:var(--px);font-weight:700;font-size:12px;
+    letter-spacing:.16em;text-transform:uppercase;margin:0 0 8px;
+  }
+  .akey .verdict.good{color:var(--good)}
+  .akey .verdict.bad{color:var(--bad)}
+  .akey .why{margin:0 0 16px;color:#6C7260;max-width:54ch;font-family:var(--serif);font-weight:400;font-size:14.5px}
+  .resume{
+    background:var(--paper-ink);color:var(--paper);
+    border:0;border-radius:0;
+    box-shadow:3px 3px 0 rgba(36,40,25,.35);
+    padding:11px 22px;
+    font-family:var(--px);font-weight:700;
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  }
+  .resume:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(36,40,25,.35)}
+
+  /* game over / clear */
+  #gameover,#clear{background:rgba(6,8,16,.92)}
+  .center-card{text-align:center;width:min(94%,560px)}
+  .go-title{
+    font-size:clamp(28px,6vw,48px);
+    font-weight:700;letter-spacing:.18em;
+    text-shadow:3px 3px 0 rgba(0,0,0,.6);
+    margin:0 0 14px;
+  }
+  .go-sub{font-size:clamp(11px,2vw,14px);letter-spacing:.1em;color:#9AA3C4;margin:0 0 26px;line-height:1.7}
+  .pxbtn{
+    background:#FFE9A8;color:#3A2000;border:0;border-radius:6px;
+    box-shadow:0 4px 0 #A8781C;
+    padding:13px 28px;margin:0 6px 8px;
+    font-weight:700;font-size:clamp(12px,2vw,15px);
+    letter-spacing:.16em;text-transform:uppercase;
+  }
+  .pxbtn:active{transform:translateY(3px);box-shadow:0 1px 0 #A8781C}
+  .pxbtn.ghost{background:none;color:#9AA3C4;box-shadow:none;border:3px solid #3A415E}
+  .pxbtn.ghost:hover{color:#fff;border-color:#9AA3C4}
+
+  /* report card inside clear overlay */
+  .report-paper{
+    background:var(--paper);color:var(--paper-ink);
+    border:3px solid var(--paper-ink);
+    box-shadow:0 0 0 3px var(--paper),0 0 0 6px var(--paper-ink);
+    border-radius:0;
+    text-align:left;
+    padding:22px 26px 24px;
+    margin:0 0 20px;
+    font-family:var(--serif);
+    max-height:56vh;overflow-y:auto;
+  }
+  .report-paper .eyebrow{
+    font-family:var(--px);font-weight:700;font-size:10.5px;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--paper-form);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px;
+  }
+  .sat-score{
+    font-family:var(--px);font-weight:700;
+    font-size:clamp(44px,9vw,72px);
+    line-height:1;letter-spacing:-.01em;
+  }
+  .sat-scale{font-family:var(--px);font-weight:700;font-size:10px;letter-spacing:.18em;color:var(--paper-form);text-transform:uppercase}
+  .band{font-style:italic;color:#6C7260;margin:10px 0 16px;font-size:15.5px;max-width:46ch}
+  .rstats{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
+    gap:1px;background:var(--paper-rule);border:1px solid var(--paper-rule);
+    border-radius:5px;overflow:hidden;margin-bottom:18px;
+  }
+  .rstat{background:var(--paper);padding:10px 12px}
+  .rstat .k{font-family:var(--px);font-weight:700;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#6C7260;display:block;margin-bottom:4px}
+  .rstat .v{font-family:var(--px);font-weight:700;font-size:18px}
+  .missed h2{font-family:var(--px);font-weight:700;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin:0 0 10px}
+  .missed-item{border-top:1px solid var(--paper-rule);padding:10px 0;font-size:14px}
+  .missed-item .mq{margin:0 0 4px}
+  .missed-item .ma{margin:0;color:var(--good);font-weight:700;font-size:13.5px}
+  .missed-item .ma .exp{color:#6C7260;font-weight:400}
+  .clean-run{color:var(--good);font-style:italic;margin:0}
+
+  /* touch controls */
+  #touch{
+    position:absolute;inset:auto 0 0 0;
+    display:none;
+    justify-content:space-between;
+    padding:0 12px 12px;
+    pointer-events:none;
+  }
+  #touch .grp{display:flex;gap:10px;pointer-events:auto}
+  .tbtn{
+    width:58px;height:58px;border-radius:50%;
+    border:3px solid rgba(255,255,255,.75);
+    background:rgba(0,0,0,.28);
+    color:#fff;font-size:22px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;
+    user-select:none;-webkit-user-select:none;touch-action:none;
+  }
+  @media (pointer:coarse){ #touch{display:flex} }
+
+  .foot{
+    text-align:center;
+    margin-top:12px;
+    font-size:10px;font-weight:700;
+    letter-spacing:.2em;text-transform:uppercase;
+    color:#3A415E;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{animation:none !important;transition:none !important}
+  }
+</style>
+
+<div id="stage">
+  <div class="cab-top">
+    <span>Super Sixteen Hundred</span>
+    <button id="muteBtn" aria-pressed="false">Sound: On</button>
+  </div>
+  <div id="frame">
+    <canvas id="cv" width="320" height="240" aria-label="Platformer game area"></canvas>
+
+    <!-- ======= TITLE ======= -->
+    <div id="title" class="overlay">
+      <div class="inner">
+        <div class="logo">
+          <div class="sup">SUPER</div>
+          <h1>SIXTEEN HUNDRED</h1>
+          <div class="sub">SAT WORLD ★ SCORE ATTACK</div>
+        </div>
+        <p class="title-copy">Twenty ? blocks stand between you and the flagpole. Bonk them, answer right, collect coins. Wrong answers cost a pencil. Erasers are not your friends.</p>
+        <div class="worlds" role="group" aria-label="Choose a world">
+          <button class="world-opt" data-sec="math" aria-pressed="false">
+            <span class="dot" aria-hidden="true"></span>
+            <span>WORLD 1-1 · MATH<small>Algebra, functions, geometry, probability</small></span>
+          </button>
+          <button class="world-opt" data-sec="rw" aria-pressed="false">
+            <span class="dot" aria-hidden="true"></span>
+            <span>WORLD 2-1 · READING &amp; WRITING<small>Grammar, vocab, punctuation, transitions</small></span>
+          </button>
+          <button class="world-opt" data-sec="mixed" aria-pressed="true">
+            <span class="dot" aria-hidden="true"></span>
+            <span>WORLD 3-1 · MIXED<small>Everything, shuffled, the way anxiety intended</small></span>
+          </button>
+        </div>
+        <button class="start-btn" id="startBtn">Press Start</button>
+        <p class="controls-note">← → move · space jump · bonk ? blocks from below · stomp erasers</p>
+      </div>
+    </div>
+
+    <!-- ======= QUESTION ======= -->
+    <div id="qmodal" class="overlay hidden">
+      <div class="paper">
+        <div class="eyebrow"><span id="qTag">Question 1 of 10 — Math</span><span>Form No. 1600-A</span></div>
+        <p class="stem" id="qStem"></p>
+        <div class="qopts" id="qOpts" role="group" aria-label="Answer choices"></div>
+        <p class="qkeyhint">Press A–D to fill a bubble</p>
+        <div class="akey" id="qAkey" aria-live="polite">
+          <p class="verdict" id="qVerdict"></p>
+          <p class="why" id="qWhy"></p>
+          <button class="resume" id="qResume">Jump back in →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======= GAME OVER ======= -->
+    <div id="gameover" class="overlay hidden">
+      <div class="center-card">
+        <p class="go-title" style="color:#E06B5C">GAME OVER</p>
+        <p class="go-sub" id="goSub">All pencils broken. The proctor collects your sheet.</p>
+        <button class="pxbtn" id="goRetry">Continue?</button>
+        <button class="pxbtn ghost" id="goTitle">Title screen</button>
+      </div>
+    </div>
+
+    <!-- ======= COURSE CLEAR / REPORT ======= -->
+    <div id="clear" class="overlay hidden">
+      <div class="center-card">
+        <p class="go-title" style="color:#FFE9A8">COURSE CLEAR!</p>
+        <div class="report-paper">
+          <div class="eyebrow"><span>Official-ish Score Report</span><span id="rSec">World 3-1</span></div>
+          <div class="sat-score" id="rScore">400</div>
+          <div class="sat-scale">Scale: 400–1600 · 60 pts per correct block</div>
+          <p class="band" id="rBand"></p>
+          <div class="rstats">
+            <div class="rstat"><span class="k">Correct</span><span class="v" id="rCorrect">–</span></div>
+            <div class="rstat"><span class="k">Blocks skipped</span><span class="v" id="rSkipped">–</span></div>
+            <div class="rstat"><span class="k">Coins</span><span class="v" id="rCoins">–</span></div>
+            <div class="rstat"><span class="k">Arcade score</span><span class="v" id="rArcade">–</span></div>
+          </div>
+          <div class="missed" id="rMissedWrap">
+            <h2>Answer key — blocks missed</h2>
+            <div id="rMissedList"></div>
+          </div>
+          <p class="clean-run hidden" id="rClean">Nothing to review. The answer key is jealous of you.</p>
+        </div>
+        <button class="pxbtn" id="clRetry">Play again</button>
+        <button class="pxbtn ghost" id="clTitle">Title screen</button>
+      </div>
+    </div>
+
+    <!-- ======= TOUCH ======= -->
+    <div id="touch">
+      <div class="grp">
+        <div class="tbtn" id="tLeft" aria-hidden="true">◀</div>
+        <div class="tbtn" id="tRight" aria-hidden="true">▶</div>
+      </div>
+      <div class="grp">
+        <div class="tbtn" id="tJump" aria-hidden="true">A</div>
+      </div>
+    </div>
+  </div>
+  <p class="foot">Not affiliated with the College Board or Nintendo · No. 2 pencils only</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ================= QUESTION BANK ================= */
+var BANK=[
+  {sec:"math",tier:1,q:"If <span class='math'>3x + 7 = 22</span>, what is the value of <span class='math'>x</span>?",
+   opts:["3","5","7","15"],ans:1,why:"Subtract 7 from both sides to get 3x = 15, then divide by 3: x = 5."},
+  {sec:"math",tier:1,q:"Two angles of a triangle measure 35° and 65°. What is the measure of the third angle?",
+   opts:["70°","80°","90°","100°"],ans:1,why:"Angles in a triangle sum to 180°. 180 − 35 − 65 = 80."},
+  {sec:"math",tier:1,q:"A bag contains 4 red marbles and 6 blue marbles. If one marble is drawn at random, what is the probability it is red?",
+   opts:["1/4","2/5","1/2","3/5"],ans:1,why:"4 red out of 10 total: 4/10 = 2/5."},
+  {sec:"math",tier:1,q:"What is the mean of the numbers 4, 9, 11, and 16?",
+   opts:["9","10","11","12"],ans:1,why:"The sum is 40; divided by 4 values, the mean is 10."},
+  {sec:"math",tier:1,q:"If <span class='math'>x/5 = 6</span>, what is <span class='math'>x − 8</span>?",
+   opts:["22","28","30","38"],ans:0,why:"x = 30, so x − 8 = 22. (Answering 30 means you stopped one step early — a classic SAT trap.)"},
+  {sec:"math",tier:2,q:"A line passes through the points (2, 3) and (4, 7). What is the y-intercept of the line?",
+   opts:["−1","1","2","3"],ans:0,why:"Slope = (7−3)/(4−2) = 2. Using y = 2x + b with (2, 3): 3 = 4 + b, so b = −1."},
+  {sec:"math",tier:2,q:"If <span class='math'>f(x) = 2x² − 3</span>, what is <span class='math'>f(−2)</span>?",
+   opts:["−11","−5","5","11"],ans:2,why:"f(−2) = 2(−2)² − 3 = 2(4) − 3 = 5. Square before multiplying."},
+  {sec:"math",tier:2,q:"If <span class='math'>2x + y = 11</span> and <span class='math'>x − y = 1</span>, what is the value of <span class='math'>xy</span>?",
+   opts:["7","12","21","28"],ans:1,why:"Adding the equations: 3x = 12, so x = 4 and y = 3. Then xy = 12."},
+  {sec:"math",tier:2,q:"A shirt sells for $40 after a 20% discount. What was the original price?",
+   opts:["$44","$48","$50","$60"],ans:2,why:"$40 is 80% of the original: 40 ÷ 0.8 = 50. (Adding 20% to $40 gives $48 — the trap.)"},
+  {sec:"math",tier:2,q:"A circle has an area of <span class='math'>25π</span>. What is its circumference?",
+   opts:["5π","10π","25π","50π"],ans:1,why:"Area πr² = 25π gives r = 5, so circumference 2πr = 10π."},
+  {sec:"math",tier:3,q:"What is the sum of the solutions of <span class='math'>x² − 5x + 6 = 0</span>?",
+   opts:["−5","−1","5","6"],ans:2,why:"Factor to (x−2)(x−3) = 0: solutions 2 and 3, sum 5. Shortcut: sum of roots = −b/a = 5."},
+  {sec:"math",tier:3,q:"A car rental costs <span class='math'>C = 25 + 0.10m</span> dollars for <span class='math'>m</span> miles driven. What does the 0.10 represent?",
+   opts:["The total cost of a rental","The cost per mile driven","The number of miles driven","The base fee before driving"],ans:1,
+   why:"0.10 is the coefficient of m — every additional mile adds $0.10. The 25 is the base fee."},
+  {sec:"math",tier:3,q:"Which of the following represents all solutions of <span class='math'>|x − 3| &lt; 5</span>?",
+   opts:["x &lt; 8","−2 &lt; x &lt; 8","−8 &lt; x &lt; 2","x &gt; −2"],ans:1,
+   why:"|x − 3| < 5 means −5 < x − 3 < 5. Add 3 throughout: −2 < x < 8."},
+  {sec:"math",tier:3,q:"A population of 500 bacteria doubles every 10 hours. How many bacteria are there after 30 hours?",
+   opts:["1,500","2,000","3,000","4,000"],ans:3,
+   why:"Three doublings in 30 hours: 500 → 1,000 → 2,000 → 4,000. Growth is exponential, not linear."},
+  {sec:"math",tier:3,q:"If <span class='math'>2^(x+3) = 32</span>, what is the value of <span class='math'>x</span>?",
+   opts:["1","2","3","5"],ans:1,why:"32 = 2⁵, so x + 3 = 5 and x = 2."},
+  {sec:"rw",tier:1,q:"“The committee released ______ final report on Thursday.” Which choice completes the sentence correctly?",
+   opts:["its","it's","their","they're"],ans:0,
+   why:"“Committee” is singular, and the possessive of it is its — no apostrophe. “It's” always means “it is.”"},
+  {sec:"rw",tier:1,q:"“Solar panels have become far cheaper over the past decade. ______, battery storage costs have fallen sharply.” Which transition fits best?",
+   opts:["However","Moreover","Instead","Nevertheless"],ans:1,
+   why:"The second sentence adds a parallel point, so an additive transition — Moreover — fits. The others signal contrast."},
+  {sec:"rw",tier:1,q:"“The collection of rare manuscripts ______ housed in the library's vault.” Which choice is correct?",
+   opts:["were","are","was","have been"],ans:2,
+   why:"The subject is “collection” (singular), not “manuscripts.” The prepositional phrase in between is a decoy."},
+  {sec:"rw",tier:1,q:"“The mayfly's adult life is famously ______: many live for less than a day.” Which word fits best?",
+   opts:["ephemeral","robust","perpetual","dormant"],ans:0,
+   why:"Ephemeral means lasting a very short time — exactly what the colon goes on to describe."},
+  {sec:"rw",tier:1,q:"“Researchers studied the ______ of sleep deprivation on memory.” Which choice is correct?",
+   opts:["affect","effect","affects","effecting"],ans:1,
+   why:"Effect is the noun (“the effect of X on Y”); affect is almost always a verb."},
+  {sec:"rw",tier:2,q:"Which choice correctly joins the two ideas? “The experiment failed ______ the results were still useful.”",
+   opts:["failed, the","failed; the","failed the","failed, however the"],ans:1,
+   why:"Two independent clauses need a semicolon (or a comma plus a conjunction). A comma alone is a comma splice."},
+  {sec:"rw",tier:2,q:"“Early critics dismissed the novel as unreadable. ______, it is now taught in universities worldwide.” Which transition fits best?",
+   opts:["Therefore","Similarly","Consequently","However"],ans:3,
+   why:"The second sentence reverses the first, so a contrast transition is needed. Therefore and Consequently wrongly imply the dismissal caused the acclaim."},
+  {sec:"rw",tier:2,q:"“The ______ essays were returned with comments.” The essays belong to several students. Which choice is correct?",
+   opts:["students","student's","students'","studentses"],ans:2,
+   why:"Plural possessive: form the plural first (students), then add the apostrophe after the s."},
+  {sec:"rw",tier:2,q:"“Smartphones are now so ______ that it is unusual to meet someone without one.” Which word fits best?",
+   opts:["ubiquitous","obsolete","clandestine","superfluous"],ans:0,
+   why:"Ubiquitous means present everywhere — matching “unusual to meet someone without one.”"},
+  {sec:"rw",tier:2,q:"“By the time the rescue team arrived, the climbers ______ shelter in a cave.” Which choice is correct?",
+   opts:["find","have found","had found","will find"],ans:2,
+   why:"An action completed before another past action takes the past perfect: had found."},
+  {sec:"rw",tier:3,q:"Which choice punctuates the sentence correctly? “Marie Curie ______ won two Nobel Prizes.”",
+   opts:["who was born in Warsaw",", who was born in Warsaw,",", who was born in Warsaw","who was born in Warsaw,"],ans:1,
+   why:"The clause is extra, nonessential information, so it needs a comma on both sides — one comma is not enough."},
+  {sec:"rw",tier:3,q:"Which sentence is free of redundancy?",
+   opts:["The two twins collaborated together on the design.","The end result was a totally complete success.","The twins collaborated on the final design.","The twins worked together jointly in collaboration."],ans:2,
+   why:"“Two twins,” “collaborated together,” “end result,” and “totally complete” all say the same thing twice."},
+  {sec:"rw",tier:3,q:"Which choice punctuates the sentence correctly? “The recipe calls for three ingredients ______ flour, butter, and sugar.”",
+   opts:["ingredients: flour","ingredients; flour","ingredients, flour","ingredients flour"],ans:0,
+   why:"A colon introduces a list after a complete clause. A semicolon can only join two independent clauses."},
+  {sec:"rw",tier:3,q:"“Walking to class, ______.” Which choice avoids a dangling modifier?",
+   opts:["the rain soaked Maria's backpack","Maria's backpack was soaked by rain","Maria was soaked by the sudden rain","it began to rain on Maria's backpack"],ans:2,
+   why:"Whoever is “walking to class” must come right after the comma. Only Maria can walk — her backpack and the rain cannot."},
+  {sec:"rw",tier:3,q:"“The critic's review was hardly ______: she praised the film's ambition while cataloguing its many failures.” Which word fits best?",
+   opts:["unequivocal","scathing","thorough","biased"],ans:0,
+   why:"Praise mixed with criticism is a mixed verdict — hardly unequivocal (clear-cut). It arguably was thorough and partly scathing."},
+  /* ---- expansion pack: modeled on released SAT question types ---- */
+  {sec:"math",tier:1,q:"A recipe calls for 3 cups of flour to make 24 cookies. How many cups are needed for 40 cookies?",
+   opts:["4","4.5","5","6"],ans:2,why:"3 ÷ 24 = 0.125 cup per cookie; 0.125 × 40 = 5 cups."},
+  {sec:"math",tier:1,q:"What is the median of 3, 7, 8, 12, and 20?",
+   opts:["7","8","9.5","10"],ans:1,why:"With five values in order, the median is the third one: 8. (10 is the mean of the ends — a trap.)"},
+  {sec:"math",tier:1,q:"If <span class='math'>a = 4</span>, what is the value of <span class='math'>3a²</span>?",
+   opts:["24","36","48","144"],ans:2,why:"Square first: a² = 16, then 3 × 16 = 48. Answering 144 means you computed (3a)²."},
+  {sec:"math",tier:2,q:"The line <span class='math'>y = −2x + 6</span> crosses the x-axis at which point?",
+   opts:["(0, 6)","(3, 0)","(−3, 0)","(6, 0)"],ans:1,why:"On the x-axis, y = 0: solve 0 = −2x + 6 to get x = 3. (0, 6) is the y-intercept."},
+  {sec:"math",tier:2,q:"If 30% of a number is 21, what is the number?",
+   opts:["51","63","70","91"],ans:2,why:"0.30n = 21, so n = 21 ÷ 0.30 = 70."},
+  {sec:"math",tier:2,q:"If <span class='math'>f(x) = 3x + 5</span> and <span class='math'>f(a) = 20</span>, what is <span class='math'>a</span>?",
+   opts:["3","5","15","20"],ans:1,why:"3a + 5 = 20, so 3a = 15 and a = 5."},
+  {sec:"math",tier:2,q:"On a map, 1.5 inches represents 60 miles. How many miles does 4 inches represent?",
+   opts:["90","120","160","240"],ans:2,why:"60 ÷ 1.5 = 40 miles per inch; 40 × 4 = 160."},
+  {sec:"math",tier:2,q:"A rectangle has a perimeter of 36 and its length is twice its width. What is its area?",
+   opts:["54","72","81","108"],ans:1,why:"2(w + 2w) = 36 gives w = 6, length 12, area 6 × 12 = 72."},
+  {sec:"math",tier:2,q:"Which expression is equivalent to <span class='math'>(x³)² · x</span>?",
+   opts:["x⁵","x⁶","x⁷","x⁹"],ans:2,why:"(x³)² = x⁶ (multiply exponents), then × x adds one more: x⁷."},
+  {sec:"math",tier:2,q:"A price rose from $80 to $92. What was the percent increase?",
+   opts:["12%","15%","18%","20%"],ans:1,why:"Increase of $12 over the original $80: 12 ÷ 80 = 15%."},
+  {sec:"math",tier:3,q:"The graphs of <span class='math'>y = x²</span> and <span class='math'>y = 2x + 3</span> intersect at two points. What is the sum of the x-coordinates of those points?",
+   opts:["−1","2","3","4"],ans:1,why:"x² − 2x − 3 = 0 factors to (x − 3)(x + 1): roots 3 and −1, sum 2. Shortcut: −b/a."},
+  {sec:"math",tier:3,q:"The graph of <span class='math'>(x − 2)² + (y + 1)² = 36</span> is a circle. What is its center?",
+   opts:["(2, −1)","(−2, 1)","(2, 1)","(−2, −1)"],ans:0,why:"In (x − h)² + (y − k)² = r², the signs flip: center (2, −1). Radius is 6, not 36."},
+  {sec:"math",tier:3,q:"A right triangle has legs of length 6 and 8. What is the sine of the angle opposite the leg of length 6?",
+   opts:["3/5","4/5","3/4","5/3"],ans:0,why:"Hypotenuse = 10 (a 6-8-10 triangle). Sine = opposite/hypotenuse = 6/10 = 3/5."},
+  {sec:"math",tier:3,q:"A study estimates students sleep a mean of 6.2 hours per night, with a margin of error of 0.4 hours. Which is a plausible value for the true mean?",
+   opts:["5.0","5.5","6.4","7.0"],ans:2,why:"The plausible interval is 6.2 ± 0.4, i.e. 5.8 to 6.6. Only 6.4 falls inside it."},
+  {sec:"math",tier:3,q:"$200 is deposited in an account earning 5% annual interest, compounded yearly. Which expression gives the account's value after <span class='math'>t</span> years?",
+   opts:["200(1.05)^t","200(0.05)^t","200 + 0.05t","200(1.5)^t"],ans:0,why:"Compound growth multiplies by (1 + rate) each year: growth factor 1.05. Adding 0.05t would be simple, linear interest."},
+  {sec:"rw",tier:1,q:"“The author, ______ first novel won several awards, lives in Maine.” Which choice is correct?",
+   opts:["who's","whose","whom","which"],ans:1,why:"Possession calls for whose. “Who's” always means “who is.”"},
+  {sec:"rw",tier:1,q:"“The hikers left ______ packs at the trailhead.” Which choice is correct?",
+   opts:["there","they're","their","theirs"],ans:2,why:"Possessive their. “There” is a place; “they're” means “they are.”"},
+  {sec:"rw",tier:1,q:"“Despite the storm, the ferry schedule remained ______ — not a single crossing was canceled.” Which word fits best?",
+   opts:["intact","erratic","suspended","tentative"],ans:0,why:"Nothing was canceled, so the schedule stayed whole and unchanged — intact."},
+  {sec:"rw",tier:2,q:"“The course teaches reading critically, writing clearly, and ______.” Which choice maintains parallel structure?",
+   opts:["arguing persuasively","to argue persuasively","argue persuasively","persuasive arguments"],ans:0,why:"The series is built on -ing forms (reading, writing), so the third item must match: arguing."},
+  {sec:"rw",tier:2,q:"“The results were remarkably ______: every one of the fifty trials produced the same value.” Which word fits best?",
+   opts:["consistent","anomalous","negligible","contentious"],ans:0,why:"Identical results across trials is the definition of consistency."},
+  {sec:"rw",tier:2,q:"“Octopuses have no bones. ______, they can squeeze through openings barely larger than their beaks.” Which transition fits best?",
+   opts:["As a result","In contrast","For instance","Meanwhile"],ans:0,why:"Having no bones causes the squeezing ability — a cause-and-effect transition."},
+  {sec:"rw",tier:2,q:"Which choice punctuates the sentence correctly? “The team's captain ______ scored both goals.”",
+   opts:["— a transfer student from Ohio —",", a transfer student from Ohio —","— a transfer student from Ohio,","a transfer student from Ohio"],ans:0,
+   why:"An interrupting phrase needs matching punctuation on both sides — two dashes or two commas, never one of each."},
+  {sec:"rw",tier:2,q:"“Neither of the essays ______ finished on time.” Which choice is correct?",
+   opts:["were","was","are","have been"],ans:1,why:"“Neither” is singular; “of the essays” is a prepositional decoy."},
+  {sec:"rw",tier:2,q:"“Critics praised the novelist's ______ style: short sentences, plain words, no ornament.” Which word fits best?",
+   opts:["spare","florid","convoluted","verbose"],ans:0,why:"Spare means stripped-down and unadorned — exactly what the colon describes. The other three mean the opposite."},
+  {sec:"rw",tier:2,q:"Which choice correctly joins the ideas? “The museum was closed ______ we walked along the river instead.”",
+   opts:[", so","; so,","so",", however"],ans:0,why:"A comma plus a coordinating conjunction (so) joins two independent clauses. “, however” alone creates a comma splice."},
+  {sec:"rw",tier:3,q:"“The findings were ______ to the debate: they neither supported nor undermined either side.” Which word fits best?",
+   opts:["tangential","integral","detrimental","decisive"],ans:0,why:"Findings that affect neither side are only peripherally related — tangential."},
+  {sec:"rw",tier:3,q:"Which choice punctuates the list correctly? “The tour stops in three capitals: ______”",
+   opts:["Lima, Peru; Quito, Ecuador; and Bogotá, Colombia.","Lima, Peru, Quito, Ecuador, and Bogotá, Colombia.","Lima; Peru, Quito; Ecuador, and Bogotá; Colombia.","Lima Peru, Quito Ecuador, and Bogotá Colombia."],ans:0,
+   why:"When list items contain commas internally, separate the items with semicolons."},
+  {sec:"rw",tier:3,q:"“The impact of the new policies, unlike that of earlier reforms, ______ still being assessed.” Which choice is correct?",
+   opts:["are","were","is","have been"],ans:2,why:"The subject is “impact” — singular. Everything between the commas is a distraction."},
+  {sec:"rw",tier:3,q:"“She is admired not only for her research ______ for her mentorship.” Which choice completes the pair?",
+   opts:["but also","and also","but too","as well"],ans:0,why:"“Not only” must be paired with “but also” — correlative conjunctions come in fixed pairs."},
+  {sec:"rw",tier:3,q:"“The senator's answer was so ______ that reporters left unsure of her actual position.” Which word fits best?",
+   opts:["equivocal","emphatic","transparent","succinct"],ans:0,why:"Equivocal means deliberately ambiguous — leaving listeners unsure. Emphatic and transparent would do the opposite."},
+  {sec:"rw",tier:3,q:"Which choice most effectively combines the sentences? “The bridge was built in 1932. It still carries traffic today.”",
+   opts:["Built in 1932, the bridge still carries traffic today.","The bridge was built in 1932 and it is still carrying traffic today, too.","The bridge, which was built in 1932, and it still carries traffic.","Being built in 1932, traffic is still carried by the bridge today."],ans:0,
+   why:"The first is concise with a correctly attached modifier. The last dangles: the traffic wasn't built in 1932."}
+];
+
+/* ================= HELPERS ================= */
+function $(id){return document.getElementById(id);}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function clamp(v,a,b){return v<a?a:v>b?b:v;}
+var reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ================= AUDIO ================= */
+var AC=null,muted=false;
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}return AC;}
+function tone(f0,f1,dur,type,vol,delay){
+  var c=ac();if(!c||muted)return;
+  var t0=c.currentTime+(delay||0);
+  var o=c.createOscillator(),g=c.createGain();
+  o.type=type||"square";
+  o.frequency.setValueAtTime(f0,t0);
+  if(f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t0+dur);
+  g.gain.setValueAtTime(vol||0.12,t0);
+  g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+  o.connect(g);g.connect(c.destination);
+  o.start(t0);o.stop(t0+dur+0.02);
+}
+var SFX={
+  jump:function(){tone(260,620,0.16,"square",0.09);},
+  coin:function(){tone(988,988,0.07,"square",0.1);tone(1319,1319,0.22,"square",0.1,0.07);},
+  bump:function(){tone(170,110,0.08,"square",0.12);},
+  stomp:function(){tone(420,90,0.14,"triangle",0.16);},
+  right:function(){tone(660,660,0.09,"square",0.1);tone(880,880,0.09,"square",0.1,0.09);tone(1175,1175,0.2,"square",0.1,0.18);},
+  wrong:function(){tone(150,85,0.35,"sawtooth",0.14);},
+  die:function(){tone(494,494,0.12,"square",0.12);tone(392,392,0.12,"square",0.12,0.12);tone(262,131,0.5,"square",0.12,0.24);},
+  clear:function(){var n=[523,587,659,784,880,1047,1319];for(var i=0;i<n.length;i++)tone(n[i],n[i],0.14,"square",0.1,i*0.11);},
+  pause:function(){tone(880,880,0.06,"square",0.08);tone(660,660,0.06,"square",0.08,0.07);},
+  select:function(){tone(659,880,0.07,"square",0.08);},
+  start:function(){tone(392,784,0.3,"square",0.1);},
+  paper:function(){tone(900,240,0.14,"sawtooth",0.05);},
+  flag:function(){tone(1046,196,0.7,"square",0.07);},
+  check:function(){tone(659,659,0.09,"square",0.09);tone(988,988,0.2,"square",0.09,0.09);},
+  hurry:function(){tone(880,880,0.08,"square",0.11);tone(880,880,0.08,"square",0.11,0.14);tone(880,880,0.08,"square",0.11,0.28);},
+  over:function(){tone(392,392,0.18,"square",0.1);tone(330,330,0.18,"square",0.1,0.18);tone(262,262,0.4,"square",0.1,0.36);}
+};
+
+/* ---- background music: original chiptune loop, square lead + triangle bass ---- */
+function mfreq(m){return 440*Math.pow(2,(m-69)/12);}
+function noteAt(freq,when,dur,type,vol){
+  var c=ac();if(!c||muted)return;
+  var o=c.createOscillator(),g=c.createGain();
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,when);
+  g.gain.exponentialRampToValueAtTime(0.001,when+dur);
+  o.connect(g);g.connect(c.destination);
+  o.start(when);o.stop(when+dur+0.02);
+}
+var LEAD=[
+  72,0,76,0, 79,76,0,72, 74,0,77,0, 81,79,77,74,
+  76,0,79,0, 84,81,79,76, 77,74,71,74, 72,0,0,0,
+  69,0,72,0, 76,72,0,69, 71,0,74,0, 79,77,74,71,
+  72,76,79,83, 84,0,81,0, 79,77,76,74, 72,0,0,0
+];
+var BASS=[
+  48,55,48,55, 50,57,50,57, 52,59,52,59, 50,57,50,50,
+  45,52,45,52, 43,50,43,50, 48,55,50,57, 48,55,48,48
+];
+var MSTEP=0.135;
+var music={on:false,step:0,next:0};
+function startMusic(){
+  var c=ac();if(!c)return;
+  music.on=true;music.step=0;music.next=c.currentTime+0.06;
+}
+function stopMusic(){music.on=false;}
+setInterval(function(){
+  if(!music.on||muted)return;
+  var c=ac();if(!c)return;
+  if(music.next<c.currentTime-0.1)music.next=c.currentTime+0.05; // catch up after tab sleep / unmute
+  var duck=(mode==="question")?0.35:1;
+  while(music.next<c.currentTime+0.25){
+    var s=music.step%LEAD.length;
+    if(LEAD[s])noteAt(mfreq(LEAD[s]),music.next,MSTEP*0.92,"square",0.042*duck);
+    if(s%2===0){var b=BASS[(s>>1)%BASS.length];if(b)noteAt(mfreq(b),music.next,MSTEP*1.7,"triangle",0.055*duck);}
+    music.step++;music.next+=MSTEP;
+  }
+},90);
+
+/* ================= SPRITES ================= */
+function sprite(rows,pal){
+  var w=rows[0].length,h=rows.length;
+  var c=document.createElement("canvas");c.width=w;c.height=h;
+  var x=c.getContext("2d");
+  for(var y=0;y<h;y++)for(var i=0;i<w;i++){var ch=rows[y][i];if(pal[ch]){x.fillStyle=pal[ch];x.fillRect(i,y,1,1);}}
+  return c;
+}
+function flipH(c){
+  var f=document.createElement("canvas");f.width=c.width;f.height=c.height;
+  var x=f.getContext("2d");x.translate(c.width,0);x.scale(-1,1);x.drawImage(c,0,0);return f;
+}
+var PPAL={
+  B:"#1A1420", /* outline        */ P:"#FF8FA3", /* eraser pink    */
+  p:"#D9647E", /* pink shade     */ L:"#FFC2CE", /* pink highlight */
+  S:"#C9D1D9", /* ferrule        */ s:"#8E99A6", /* ferrule shade  */
+  Y:"#F2B233", /* pencil yellow  */ y:"#C98A1B", /* yellow shade   */
+  l:"#FFD873", /* yellow highlight */
+  W:"#FFFFFF", K:"#1A0E14",
+  T:"#C98A4B", /* wood           */ t:"#9A6633", /* wood shade     */
+  D:"#3A3A44"  /* graphite       */
+};
+function pencilRows(legA,legB){
+  return [
+    "...BBBBBBBB...",
+    "..BLPPPPPPpB..",
+    "..BLPPPPPPpB..",
+    "..BSsSSSSsSB..",
+    "..BlYYYYYYyB..",
+    "..BlWWYYWWyB..",
+    "..BlWKYYWKyB..",
+    "..BlYYYYYYyB..",
+    "..BlYYBBYYyB..",
+    "..BlYYYYYYyB..",
+    "..BlYYYYYYyB..",
+    "..BtTTTTTTtB..",
+    "..BTtTTTTtTB..",
+    "...BTTTTTTB...",
+    "....BDDDDB....",
+    legA,legB
+  ];
+}
+var SPR={
+  p1:sprite(pencilRows("...BDB..BDB...","...BDB..BDB..."),PPAL),
+  p2:sprite(pencilRows("..BDB....BDB..","..BDB....BDB.."),PPAL),
+  pj:sprite(pencilRows("....BDDDDB....",".....BDDB....."),PPAL)
+};
+SPR.p1f=flipH(SPR.p1);SPR.p2f=flipH(SPR.p2);SPR.pjf=flipH(SPR.pj);
+
+var EPAL={
+  E:"#FF8FA3", /* eraser pink   */ e:"#D9647E", /* pink shade    */
+  h:"#FFC2CE", /* pink highlight*/ B:"#3A2430", /* outline/brows */
+  W:"#F2F2EA", /* label band    */ w:"#C9CDD1", /* band shade    */
+  U:"#4A6FD4", /* brand stripe  */ K:"#1A0E14", /* pupil         */
+  D:"#3A3A44"  /* feet          */
+};
+function eraserRows(feet){
+  return [
+    ".BBBBBBBBBBBB.",
+    "BhhhEEEEEEEEeB",
+    "BhEEEEEEEEEEeB",
+    "BEBBEEEEEEBBEB",
+    "BEWWKEEEEKWWEB",
+    "BEWWKEEEEKWWEB",
+    "BEEEEEEEEEEEeB",
+    "BEEEBBBBBBEEeB",
+    "BEEEEEEEEEEEeB",
+    "BWWWWWWWWWWWwB",
+    "BWWUUUUUUUUWwB",
+    "BWWWWWWWWWWWwB",
+    ".BBBBBBBBBBBB.",
+    feet
+  ];
+}
+SPR.e1=sprite(eraserRows(".DDD......DDD."),EPAL);
+SPR.e2=sprite(eraserRows("...DDD..DDD..."),EPAL);
+SPR.e1f=flipH(SPR.e1);
+SPR.e2f=flipH(SPR.e2);
+
+var QPAL={D:"#5A3000",G:"#F7A21B",W:"#FFF7E0",O:"#8A5200"};
+SPR.qblock=sprite([
+  "DDDDDDDDDDDDDDDD",
+  "DOGGGGGGGGGGGGOD",
+  "DGGGGGWWWWGGGGGD",
+  "DGGGGWWGGWWGGGGD",
+  "DGGGGWWGGWWGGGGD",
+  "DGGGGGGGWWGGGGGD",
+  "DGGGGGGWWGGGGGGD",
+  "DGGGGGGWWGGGGGGD",
+  "DGGGGGGGGGGGGGGD",
+  "DGGGGGGWWGGGGGGD",
+  "DGGGGGGWWGGGGGGD",
+  "DGGGGGGGGGGGGGGD",
+  "DGGGGGGGGGGGGGGD",
+  "DGGGGGGGGGGGGGGD",
+  "DOGGGGGGGGGGGGOD",
+  "DDDDDDDDDDDDDDDD"
+],QPAL);
+
+var CPAL={G:"#F7A21B",W:"#FFF7E0",D:"#8A5200"};
+SPR.coin=sprite([
+  "..GGGG..",
+  ".GGGGGG.",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  "GGWGGGGD",
+  ".GGGGGG.",
+  "..GGGG.."
+],CPAL);
+
+/* ================= PIXEL FONT (5×7) ================= */
+var FONT={
+  "A":[14,17,17,31,17,17,17],"B":[30,17,30,17,17,17,30],"C":[14,17,16,16,16,17,14],
+  "D":[30,17,17,17,17,17,30],"E":[31,16,30,16,16,16,31],"F":[31,16,30,16,16,16,16],
+  "G":[14,17,16,23,17,17,15],"H":[17,17,31,17,17,17,17],"I":[31,4,4,4,4,4,31],
+  "J":[7,2,2,2,18,18,12],"K":[17,18,20,24,20,18,17],"L":[16,16,16,16,16,16,31],
+  "M":[17,27,21,21,17,17,17],"N":[17,25,21,19,17,17,17],"O":[14,17,17,17,17,17,14],
+  "P":[30,17,17,30,16,16,16],"Q":[14,17,17,17,21,18,13],"R":[30,17,17,30,20,18,17],
+  "S":[15,16,16,14,1,1,30],"T":[31,4,4,4,4,4,4],"U":[17,17,17,17,17,17,14],
+  "V":[17,17,17,17,17,10,4],"W":[17,17,17,21,21,27,17],"X":[17,10,4,4,4,10,17],
+  "Y":[17,10,4,4,4,4,4],"Z":[31,1,2,4,8,16,31],
+  "0":[14,17,19,21,25,17,14],"1":[4,12,4,4,4,4,14],"2":[14,17,1,6,8,16,31],
+  "3":[30,1,1,14,1,1,30],"4":[2,6,10,18,31,2,2],"5":[31,16,30,1,1,17,14],
+  "6":[14,16,16,30,17,17,14],"7":[31,1,2,4,8,8,8],"8":[14,17,17,14,17,17,14],
+  "9":[14,17,17,15,1,1,14],
+  "-":[0,0,0,31,0,0,0],"×":[0,17,10,4,10,17,0],"?":[14,17,1,6,4,0,4],
+  "!":[4,4,4,4,4,0,4],".":[0,0,0,0,0,6,6],",":[0,0,0,0,6,2,4],
+  ":":[0,6,6,0,6,6,0],"/":[1,2,4,4,4,8,16],"+":[0,4,4,31,4,4,0],
+  "*":[4,21,14,31,14,21,4],">":[8,4,2,1,2,4,8],"'":[4,4,8,0,0,0,0],
+  " ":[0,0,0,0,0,0,0]
+};
+function pxPass(c2,str,x,y,scale,color){
+  c2.fillStyle=color;
+  for(var i=0;i<str.length;i++){
+    var g=FONT[str[i]];
+    if(!g)continue;
+    for(var r=0;r<7;r++){
+      for(var b=0;b<5;b++){
+        if(g[r]&(16>>b))c2.fillRect(x+(i*6+b)*scale,y+r*scale,scale,scale);
+      }
+    }
+  }
+}
+function drawPx(str,x,y,scale,color,shadow){
+  str=String(str).toUpperCase();
+  if(shadow)pxPass(ctx,str,x+scale,y+scale,scale,shadow);
+  pxPass(ctx,str,x,y,scale,color);
+}
+function pixelText(str,scale,color,shadow){
+  str=String(str).toUpperCase();
+  var cvs=document.createElement("canvas");
+  cvs.width=Math.max(1,(str.length*6-1)*scale+(shadow?scale:0));
+  cvs.height=7*scale+(shadow?scale:0);
+  var c2=cvs.getContext("2d");
+  if(shadow)pxPass(c2,str,scale,scale,scale,shadow);
+  pxPass(c2,str,0,0,scale,color);
+  cvs.style.imageRendering="pixelated";
+  cvs.style.maxWidth="100%";
+  cvs.style.height="auto";
+  return cvs;
+}
+function mountPx(el,str,scale,color,shadow){
+  el.textContent="";
+  el.appendChild(pixelText(str,scale,color,shadow));
+}
+
+/* prerendered tiles */
+function makeTile(fn){
+  var c=document.createElement("canvas");c.width=16;c.height=16;
+  fn(c.getContext("2d"));return c;
+}
+var T_GROUND=makeTile(function(x){
+  x.fillStyle="#C46A2C";x.fillRect(0,0,16,16);
+  x.fillStyle="#F0A860";x.fillRect(0,0,16,2);
+  x.fillStyle="#7A3C10";
+  x.fillRect(0,15,16,1);x.fillRect(0,7,16,1);
+  x.fillRect(7,2,1,5);x.fillRect(15,2,1,5);
+  x.fillRect(3,8,1,7);x.fillRect(11,8,1,7);
+});
+var T_BRICK=makeTile(function(x){
+  x.fillStyle="#B5391F";x.fillRect(0,0,16,16);
+  x.fillStyle="#E8734E";x.fillRect(0,0,16,1);
+  x.fillStyle="#5A140A";
+  x.fillRect(0,7,16,1);x.fillRect(0,15,16,1);
+  x.fillRect(7,0,1,7);x.fillRect(3,8,1,7);x.fillRect(12,8,1,7);
+});
+var T_USED=makeTile(function(x){
+  x.fillStyle="#9A6A2B";x.fillRect(0,0,16,16);
+  x.fillStyle="#5A3000";
+  x.fillRect(0,0,16,1);x.fillRect(0,15,16,1);x.fillRect(0,0,1,16);x.fillRect(15,0,1,16);
+  x.fillRect(2,2,2,2);x.fillRect(12,2,2,2);x.fillRect(2,12,2,2);x.fillRect(12,12,2,2);
+});
+var T_PIPE_TL=makeTile(function(x){
+  x.fillStyle="#1E6B23";x.fillRect(0,0,16,16);
+  x.fillStyle="#37A03C";x.fillRect(1,1,14,15);
+  x.fillStyle="#7ED584";x.fillRect(2,1,3,15);
+});
+var T_PIPE_TR=makeTile(function(x){
+  x.fillStyle="#1E6B23";x.fillRect(0,0,16,16);
+  x.fillStyle="#37A03C";x.fillRect(0,1,15,15);
+  x.fillStyle="#7ED584";x.fillRect(1,1,2,15);
+});
+var T_PIPE_L=makeTile(function(x){
+  x.fillStyle="#1E6B23";x.fillRect(0,0,16,16);
+  x.fillStyle="#37A03C";x.fillRect(2,0,12,16);
+  x.fillStyle="#7ED584";x.fillRect(3,0,3,16);
+});
+var T_PIPE_R=makeTile(function(x){
+  x.fillStyle="#1E6B23";x.fillRect(0,0,16,16);
+  x.fillStyle="#37A03C";x.fillRect(0,0,14,16);
+  x.fillStyle="#7ED584";x.fillRect(1,0,2,16);
+});
+
+/* ================= LEVEL ================= */
+var TS=16,H=15,W=400;
+var VW=320,VH=240;
+var AIR=0,GROUND=1,BRICK=2,QBLK=3,USED=4,P_TL=5,P_TR=6,P_L=7,P_R=8;
+var TILE_IMG={};
+TILE_IMG[GROUND]=T_GROUND;TILE_IMG[BRICK]=T_BRICK;TILE_IMG[QBLK]=SPR.qblock;TILE_IMG[USED]=T_USED;
+TILE_IMG[P_TL]=T_PIPE_TL;TILE_IMG[P_TR]=T_PIPE_TR;TILE_IMG[P_L]=T_PIPE_L;TILE_IMG[P_R]=T_PIPE_R;
+
+var GAPS=[[41,42],[79,80,81],[121,122],[161,162,163],[201,202],[241,242,243],[283,284],[321,322,323],[352,353]];
+var PIPES=[{x:30,h:2},{x:66,h:2},{x:141,h:2},{x:190,h:2},{x:230,h:2},{x:275,h:2},{x:310,h:2},{x:345,h:2}];
+var QX=[17,25,27,49,60,74,96,118,136,168,183,197,212,228,250,262,290,305,330,360];   // 20 ? blocks, row 9
+var BRICKX=[16,18,24,26,28,48,50,59,61,73,75,95,97,117,119,135,137,167,169,
+            182,184,196,198,211,213,227,229,249,251,261,263,289,291,304,306,329,331,359,361];
+var ENEMYX=[34,55,70,105,125,152,185,205,225,255,270,295,315,338,365];
+var COINSPOTS=[
+  [20,5],[21,5],[22,5],[41,8],[42,8],[52,9],[53,9],[54,9],
+  [79,8],[80,8],[81,8],[100,9],[101,9],[110,5],[111,5],
+  [121,8],[122,8],[130,9],[145,9],[146,9],[161,8],[162,8],[163,8],[175,9],[176,9],
+  [183,5],[184,5],[201,8],[202,8],[212,5],[213,5],[220,9],[221,9],
+  [241,8],[242,8],[243,8],[255,9],[256,9],[262,5],[263,5],
+  [283,8],[284,8],[295,9],[296,9],[305,5],[306,5],
+  [321,8],[322,8],[323,8],[335,9],[336,9],[352,8],[353,8],[360,5],[361,5],[365,9],[366,9]
+];
+var FLAG_X=380,CASTLE_X=385,CHECKPOINTS=[2*TS,106*TS,246*TS];
+
+function buildTiles(){
+  var t=new Uint8Array(W*H);
+  var gapset={};
+  GAPS.forEach(function(g){g.forEach(function(c){gapset[c]=1;});});
+  for(var x=0;x<W;x++){
+    if(!gapset[x]){t[13*W+x]=GROUND;t[14*W+x]=GROUND;}
+  }
+  PIPES.forEach(function(p){
+    for(var r=0;r<p.h;r++){
+      var y=12-r;
+      if(r===p.h-1){t[y*W+p.x]=P_TL;t[y*W+p.x+1]=P_TR;}
+      else{t[y*W+p.x]=P_L;t[y*W+p.x+1]=P_R;}
+    }
+  });
+  BRICKX.forEach(function(x){t[9*W+x]=BRICK;});
+  QX.forEach(function(x){t[9*W+x]=QBLK;});
+  return t;
+}
+
+/* ================= STATE ================= */
+var cv=$("cv"),ctx=cv.getContext("2d");
+ctx.imageSmoothingEnabled=false;
+
+var G=null;                 // game run state
+var mode="title";           // title | play | question | dying | flag | clear | gameover
+var keys={l:false,r:false,j:false,jHeld:false};
+var SECNAMES={math:"Math",rw:"Reading & Writing",mixed:"Mixed"};
+var WORLDNO={math:"1-1",rw:"2-1",mixed:"3-1"};
+var chosenSec="mixed";
+
+function buildRun(sec){
+  var pool=BANK.filter(function(q){return sec==="mixed"||q.sec===sec;});
+  var run=[];
+  [1,2,3].forEach(function(tier){
+    var pick={1:6,2:8,3:6}[tier];
+    run=run.concat(shuffle(pool.filter(function(q){return q.tier===tier;})).slice(0,pick));
+  });
+  return run.map(function(q){
+    var idx=shuffle([0,1,2,3]);
+    return {sec:q.sec,q:q.q,why:q.why,opts:idx.map(function(i){return q.opts[i];}),ans:idx.indexOf(q.ans)};
+  });
+}
+
+function newGame(sec){
+  var tiles=buildTiles();
+  var qmap={};
+  QX.forEach(function(x,i){qmap[9*W+x]=i;});
+  G={
+    sec:sec,tiles:tiles,qmap:qmap,run:buildRun(sec),
+    score:0,coins:0,lives:3,time:500,timeAcc:0,
+    correct:0,answered:0,missed:[],
+    player:{x:2*TS,y:12*TS-1,vx:0,vy:0,w:10,h:15,face:1,onGround:false,anim:0,coyote:0,jbuf:0,maxX:0},
+    enemies:ENEMYX.map(function(x){return {x:x*TS,y:13*TS-14,vx:-0.35,w:14,h:14,alive:true,squish:0};}),
+    coinsArr:COINSPOTS.map(function(c){return {x:c[0]*TS+4,y:c[1]*TS+2,got:false};}),
+    cam:0,bumps:[],pops:[],curQ:null,flagT:0,deadT:0,invuln:0
+  };
+  updateHUD();
+}
+
+/* ================= HUD ================= */
+function pad(n,l){n=String(n);while(n.length<l)n="0"+n;return n;}
+function updateHUD(){} /* HUD is drawn on the canvas each frame in pixel font */
+
+/* ================= PHYSICS ================= */
+function tileAt(tx,ty){
+  if(tx<0||tx>=W)return GROUND;
+  if(ty<0||ty>=H)return AIR;
+  return G.tiles[ty*W+tx];
+}
+function solidAt(tx,ty){return tileAt(tx,ty)>AIR;}
+
+function moveEntity(e){
+  // horizontal
+  e.x+=e.vx;
+  var top=Math.floor(e.y/TS),bot=Math.floor((e.y+e.h-1)/TS);
+  if(e.vx>0){
+    var tx=Math.floor((e.x+e.w)/TS);
+    for(var ty=top;ty<=bot;ty++)if(solidAt(tx,ty)){e.x=tx*TS-e.w-0.01;e.vx=0;e.hitWall=true;break;}
+  }else if(e.vx<0){
+    var tx2=Math.floor(e.x/TS);
+    for(var ty2=top;ty2<=bot;ty2++)if(solidAt(tx2,ty2)){e.x=(tx2+1)*TS+0.01;e.vx=0;e.hitWall=true;break;}
+  }
+  // vertical
+  e.y+=e.vy;
+  e.onGround=false;
+  var lx=Math.floor((e.x+1)/TS),rx=Math.floor((e.x+e.w-1)/TS);
+  if(e.vy>0){
+    var by=Math.floor((e.y+e.h)/TS);
+    for(var cx=lx;cx<=rx;cx++)if(solidAt(cx,by)){e.y=by*TS-e.h-0.01;e.vy=0;e.onGround=true;break;}
+  }else if(e.vy<0){
+    var ty3=Math.floor(e.y/TS);
+    for(var cx2=lx;cx2<=rx;cx2++)if(solidAt(cx2,ty3)){
+      e.y=(ty3+1)*TS+0.01;e.vy=0;
+      if(e.isPlayer)headBump(ty3,lx,rx);
+      break;
+    }
+  }
+}
+
+function headBump(ty,lx,rx){
+  // pick the tile the player overlaps most, so corner grazes can't trigger a neighbor
+  var p=G.player,best=-1,bestOv=0;
+  for(var tx=lx;tx<=rx;tx++){
+    var t=tileAt(tx,ty);
+    if(t!==QBLK&&t!==BRICK)continue;
+    var ov=Math.min(p.x+p.w,(tx+1)*TS)-Math.max(p.x,tx*TS);
+    if(ov>bestOv){bestOv=ov;best=tx;}
+  }
+  if(best<0||bestOv<3)return;
+  if(tileAt(best,ty)===QBLK){
+    G.tiles[ty*W+best]=USED;
+    G.bumps.push({tx:best,ty:ty,t:0});
+    openQuestion(G.qmap[ty*W+best],best,ty);
+  }else{
+    SFX.bump();
+    G.bumps.push({tx:best,ty:ty,t:0});
+  }
+}
+
+/* ================= QUESTION FLOW ================= */
+function openQuestion(qi,tx,ty){
+  mode="question";
+  SFX.paper();
+  var q=G.run[qi];
+  G.curQ={q:q,tx:tx,ty:ty,done:false};
+  mountPx($("qTag"),"QUESTION "+(G.answered+1)+" OF 20 - "+(q.sec==="math"?"MATH":"READING/WRITING"),1,"#8A9878");
+  $("qStem").innerHTML=q.q;
+  var box=$("qOpts");box.innerHTML="";box.classList.remove("answered");
+  q.opts.forEach(function(txt,i){
+    var b=document.createElement("button");
+    b.className="qopt";
+    var bub=document.createElement("span");
+    bub.className="bub";
+    bub.appendChild(pixelText("ABCD"[i],2,"#242819"));
+    var t=document.createElement("span");
+    t.className="txt";
+    t.innerHTML=txt;
+    b.appendChild(bub);b.appendChild(t);
+    b.addEventListener("click",function(){answerQ(i);});
+    box.appendChild(b);
+  });
+  $("qAkey").classList.remove("show");
+  $("qmodal").classList.remove("hidden");
+}
+
+function answerQ(pick){
+  if(!G.curQ||G.curQ.done)return;
+  G.curQ.done=true;
+  var q=G.curQ.q,right=pick===q.ans;
+  G.answered++;
+  var opts=$("qOpts").children;
+  for(var i=0;i<opts.length;i++)opts[i].disabled=true;
+  $("qOpts").classList.add("answered");
+  opts[q.ans].classList.add("is-correct");
+  if(!right)opts[pick].classList.add("is-wrong");
+  var v=$("qVerdict");
+  if(right){
+    G.correct++;G.score+=200;
+    G.pops.push({x:G.curQ.tx*TS+4,y:G.curQ.ty*TS-12,vy:-2.2,t:0,txt:"+200"});
+    SFX.right();SFX.coin();
+    v.className="verdict good";
+    mountPx(v,"CORRECT! +200",2,"#2F7D46");
+  }else{
+    G.lives--;G.missed.push(q);
+    SFX.wrong();
+    v.className="verdict bad";
+    mountPx(v,"WRONG! THE ANSWER IS "+"ABCD"[q.ans]+". -1 PENCIL",1,"#C0392B");
+  }
+  $("qWhy").textContent=q.why;
+  mountPx($("qResume"),G.lives<=0?"SEE THE DAMAGE >":"JUMP BACK IN >",1,"#FAFBF3");
+  $("qAkey").classList.add("show");
+  updateHUD();
+  $("qResume").focus({preventScroll:true});
+}
+
+function closeQuestion(){
+  $("qmodal").classList.add("hidden");
+  G.curQ=null;
+  if(G.lives<=0){gameOver();}
+  else{mode="play";SFX.pause();}
+}
+$("qResume").addEventListener("click",closeQuestion);
+
+/* ================= DEATH / GAMEOVER / CLEAR ================= */
+function killPlayer(){
+  if(mode!=="play")return;
+  mode="dying";
+  stopMusic();
+  SFX.die();
+  G.deadT=0;
+  G.player.vy=-5.5;
+}
+function respawnOrGameOver(){
+  G.lives--;
+  updateHUD();
+  if(G.lives<=0){gameOver();return;}
+  var p=G.player;
+  var backTo=CHECKPOINTS[0];
+  CHECKPOINTS.forEach(function(c){if(p.maxX>=c)backTo=c;});
+  p.x=backTo;p.y=12*TS-1;p.vx=0;p.vy=0;p.face=1;
+  G.time=500;G.invuln=90;
+  mode="play";
+  startMusic();
+}
+function gameOver(){
+  mode="gameover";
+  stopMusic();
+  SFX.over();
+  $("goSub").textContent="All pencils broken at question "+(G.answered)+" of 20. The proctor collects your sheet.";
+  $("gameover").classList.remove("hidden");
+}
+function bandLine(s){
+  if(s>=1520)return "Ivy bait. Frame this and hang it above the fireplace.";
+  if(s>=1240)return "Solidly flexable. Admissions officers nod respectfully.";
+  if(s>=880)return "A respectable Tuesday. The curve thanks you for your service.";
+  if(s>=640)return "The pencil was doing its best. So were you, probably.";
+  return "The proctor believes in you. The proctor is contractually required to.";
+}
+function courseClear(){
+  mode="clear";
+  SFX.clear();
+  G.score+=Math.ceil(G.time)*10;
+  updateHUD();
+  var sat=400+60*G.correct;
+  $("rSec").textContent="World "+WORLDNO[G.sec]+" · "+SECNAMES[G.sec];
+  mountPx($("rScore"),String(sat),6,"#242819","#C9CDB0");
+  $("rBand").textContent=bandLine(sat);
+  $("rCorrect").textContent=G.correct+"/"+G.answered;
+  $("rSkipped").textContent=String(20-G.answered);
+  $("rCoins").textContent="×"+G.coins;
+  $("rArcade").textContent=pad(G.score,6);
+  var wrap=$("rMissedWrap"),list=$("rMissedList"),clean=$("rClean");
+  if(G.missed.length===0){
+    wrap.classList.add("hidden");clean.classList.remove("hidden");
+    clean.textContent=G.answered<20
+      ?"No wrong answers — though "+(20-G.answered)+" block(s) went unbonked."
+      :"Nothing to review. The answer key is jealous of you.";
+  }else{
+    wrap.classList.remove("hidden");clean.classList.add("hidden");
+    list.innerHTML="";
+    G.missed.forEach(function(q){
+      var d=document.createElement("div");
+      d.className="missed-item";
+      d.innerHTML="<p class='mq'>"+q.q+"</p><p class='ma'>"+"ABCD"[q.ans]+" — "+q.opts[q.ans]+" <span class='exp'>· "+q.why+"</span></p>";
+      list.appendChild(d);
+    });
+  }
+  $("clear").classList.remove("hidden");
+}
+
+/* ================= UPDATE ================= */
+function update(){
+  if(!G)return;
+  var p=G.player;
+
+  if(mode==="play"){
+    // timer
+    G.timeAcc++;
+    if(G.timeAcc>=30){G.timeAcc=0;G.time--;if(G.time===100)SFX.hurry();if(G.time<=0){killPlayer();}}
+
+    // input
+    var ax=0.09;
+    if(keys.l){p.vx-=ax;p.face=-1;}
+    if(keys.r){p.vx+=ax;p.face=1;}
+    if(!keys.l&&!keys.r)p.vx*=0.85;
+    p.vx=clamp(p.vx,-1.7,1.7);
+
+    if(p.onGround)p.coyote=6;else if(p.coyote>0)p.coyote--;
+    if(keys.j&&!keys.jHeld){p.jbuf=6;keys.jHeld=true;}
+    if(p.jbuf>0)p.jbuf--;
+    if(p.jbuf>0&&p.coyote>0){
+      p.vy=-6.8;p.coyote=0;p.jbuf=0;SFX.jump();
+    }
+    if(!keys.j&&p.vy<-2)p.vy=-2; // variable jump height
+
+    p.vy=Math.min(p.vy+0.32,6);
+    p.isPlayer=true;
+    moveEntity(p);
+    p.x=clamp(p.x,0,W*TS-p.w);
+    p.maxX=Math.max(p.maxX,p.x);
+    if(Math.abs(p.vx)>0.15&&p.onGround)p.anim+=Math.abs(p.vx)*0.28;
+    if(G.invuln>0)G.invuln--;
+
+    // fell in a pit
+    if(p.y>H*TS+24){respawnOrGameOver();}
+
+    // checkpoints + hurry warning
+    if(!G.cp1&&p.x>=CHECKPOINTS[1]){G.cp1=true;SFX.check();}
+    if(!G.cp2&&p.x>=CHECKPOINTS[2]){G.cp2=true;SFX.check();}
+
+    // flagpole
+    if(p.x+p.w>=FLAG_X*TS+5){mode="flag";G.flagT=0;p.vx=0;stopMusic();SFX.flag();}
+
+    // coins
+    G.coinsArr.forEach(function(c){
+      if(c.got)return;
+      if(p.x<c.x+8&&p.x+p.w>c.x&&p.y<c.y+12&&p.y+p.h>c.y){
+        c.got=true;G.coins++;G.score+=200;SFX.coin();updateHUD();
+        G.pops.push({x:c.x,y:c.y,vy:-2.2,t:0,txt:"+200"});
+      }
+    });
+
+    // enemies
+    G.enemies.forEach(function(e){
+      if(!e.alive)return;
+      e.vy=(e.vy||0)+0.32;e.vy=Math.min(e.vy,6);
+      var pvx=e.vx||-0.35;      // wall collision zeroes vx, so keep the pre-move direction
+      e.hitWall=false;
+      moveEntity(e);
+      if(e.hitWall)e.vx=pvx>0?-0.35:0.35;
+      // turn at ledge
+      if(e.onGround){
+        var aheadX=e.vx<0?Math.floor((e.x-1)/TS):Math.floor((e.x+e.w+1)/TS);
+        var belowY=Math.floor((e.y+e.h+2)/TS);
+        if(!solidAt(aheadX,belowY))e.vx=-e.vx;
+      }
+      if(e.y>H*TS+24){e.alive=false;return;}
+      // player collision
+      if(G.invuln>0||mode!=="play")return;
+      if(p.x<e.x+e.w&&p.x+p.w>e.x&&p.y<e.y+e.h&&p.y+p.h>e.y){
+        if(p.vy>0.5&&(p.y+p.h-e.y)<9){
+          e.alive=false;e.squish=1;
+          G.score+=100;SFX.stomp();updateHUD();
+          p.vy=-3.4;
+        }else{
+          killPlayer();
+        }
+      }
+    });
+  }
+  else if(mode==="dying"){
+    G.deadT++;
+    p.vy=Math.min(p.vy+0.32,6);
+    p.y+=p.vy;
+    if(G.deadT>80)respawnOrGameOver();
+  }
+  else if(mode==="flag"){
+    G.flagT++;
+    var groundY=13*TS-p.h;
+    if(p.y<groundY){p.y=Math.min(p.y+2,groundY);p.x=FLAG_X*TS-4;}
+    else if(p.x<CASTLE_X*TS+34){p.x+=1.1;p.face=1;p.anim+=0.25;}
+    else if(G.flagT>30){courseClear();}
+  }
+
+  // effects
+  G.bumps=G.bumps.filter(function(b){b.t++;return b.t<12;});
+  G.pops=G.pops.filter(function(c){c.t++;c.y+=c.vy;c.vy+=0.09;return c.t<44;});
+
+  // camera
+  G.cam=clamp(p.x-130,0,W*TS-VW);
+}
+
+/* ================= DRAW ================= */
+function draw(){
+  ctx.fillStyle="#5C94FC";
+  ctx.fillRect(0,0,VW,VH);
+  if(!G){return;}
+  var cam=G.cam;
+
+  // hills (parallax)
+  ctx.fillStyle="#2E9E3E";
+  for(var hx=0;hx<W*TS;hx+=340){
+    var sx=hx-cam*0.7;
+    if(sx>-160&&sx<VW+40){
+      ctx.beginPath();
+      ctx.moveTo(sx,13*TS);ctx.lineTo(sx+70,13*TS-52);ctx.lineTo(sx+140,13*TS);
+      ctx.closePath();ctx.fill();
+    }
+  }
+  // clouds
+  ctx.fillStyle="#FFFFFF";
+  for(var cxx=40;cxx<W*TS;cxx+=260){
+    var cxs=cxx-cam*0.5,cy=34+((cxx/260)%3)*22;
+    if(cxs>-70&&cxs<VW+30){
+      ctx.fillRect(cxs,cy,44,12);
+      ctx.fillRect(cxs+8,cy-7,26,8);
+    }
+  }
+  // bushes
+  ctx.fillStyle="#5BBF4A";
+  [10,58,92,133,180].forEach(function(bx){
+    var bs=bx*TS-cam;
+    if(bs>-60&&bs<VW+20){
+      ctx.fillRect(bs,13*TS-10,44,10);
+      ctx.fillRect(bs+10,13*TS-16,24,8);
+    }
+  });
+
+  // castle
+  var cx0=CASTLE_X*TS-cam;
+  if(cx0>-100&&cx0<VW+20){
+    ctx.fillStyle="#B5391F";
+    ctx.fillRect(cx0,13*TS-64,80,64);
+    ctx.fillStyle="#7A1F0C";
+    for(var mx=0;mx<80;mx+=16){ctx.fillRect(cx0+mx,13*TS-64,8,8);}
+    ctx.fillRect(cx0+16,13*TS-80,48,16);
+    for(var mx2=16;mx2<64;mx2+=16){ctx.fillStyle="#B5391F";ctx.fillRect(cx0+mx2,13*TS-80,8,8);}
+    ctx.fillStyle="#1A0B06";
+    ctx.fillRect(cx0+30,13*TS-28,20,28);
+    ctx.beginPath();ctx.arc(cx0+40,13*TS-28,10,Math.PI,0);ctx.fill();
+  }
+
+  // flag pole
+  var fx=FLAG_X*TS-cam;
+  if(fx>-30&&fx<VW+10){
+    ctx.fillStyle="#C9D1D9";
+    ctx.fillRect(fx+6,3*TS,3,10*TS);
+    ctx.fillStyle="#F2F2EA";
+    ctx.beginPath();ctx.arc(fx+7.5,3*TS,4,0,7);ctx.fill();
+    ctx.fillStyle="#2E9E3E";
+    ctx.beginPath();ctx.moveTo(fx+6,3*TS+6);ctx.lineTo(fx-16,3*TS+13);ctx.lineTo(fx+6,3*TS+20);ctx.closePath();ctx.fill();
+  }
+
+  // tiles
+  var x0=Math.floor(cam/TS),x1=Math.min(W-1,x0+Math.ceil(VW/TS)+1);
+  for(var ty=0;ty<H;ty++){
+    for(var tx=x0;tx<=x1;tx++){
+      var t=G.tiles[ty*W+tx];
+      if(t===AIR)continue;
+      var off=0;
+      for(var bi=0;bi<G.bumps.length;bi++){
+        var b=G.bumps[bi];
+        if(b.tx===tx&&b.ty===ty){off=-Math.sin(b.t/12*Math.PI)*4;break;}
+      }
+      ctx.drawImage(TILE_IMG[t],tx*TS-cam,ty*TS+off);
+    }
+  }
+
+  // coins
+  G.coinsArr.forEach(function(c){
+    if(c.got)return;
+    var sx=c.x-cam;
+    if(sx>-12&&sx<VW+12)ctx.drawImage(SPR.coin,Math.round(sx),Math.round(c.y));
+  });
+  // coin pops: spin (width oscillates), arc up, fade, floating +200
+  G.pops.forEach(function(c){
+    var a=1-c.t/44;
+    ctx.globalAlpha=Math.max(0,a);
+    var ph=Math.abs(Math.cos(c.t*0.32));
+    var w=Math.max(1,Math.round(8*ph));
+    ctx.drawImage(SPR.coin,Math.round(c.x-cam+(8-w)/2),Math.round(c.y),w,12);
+    if(c.txt&&c.t>6){
+      ctx.fillStyle="#FFF7E0";
+      ctx.font="700 8px 'Courier New',monospace";
+      ctx.fillText(c.txt,Math.round(c.x-cam-6),Math.round(c.y-5));
+    }
+    ctx.globalAlpha=1;
+  });
+
+  // enemies
+  G.enemies.forEach(function(e){
+    var sx=e.x-cam;
+    if(sx<-20||sx>VW+20)return;
+    if(e.alive){
+      var step=Math.floor(e.x/6)%2===0;
+      var img=e.vx>0?(step?SPR.e1f:SPR.e2f):(step?SPR.e1:SPR.e2);
+      ctx.drawImage(img,Math.round(sx),Math.round(e.y));
+    }else if(e.squish>0&&e.squish<20){
+      e.squish++;
+      ctx.drawImage(SPR.e1,0,0,14,14,Math.round(sx),Math.round(e.y+9),14,5);
+    }
+  });
+
+  // player
+  var p=G.player;
+  if(!(G.invuln>0&&Math.floor(G.invuln/4)%2===0)){
+    var img;
+    if(!p.onGround)img=p.face>0?SPR.pj:SPR.pjf;
+    else if(Math.abs(p.vx)>0.15)img=(Math.floor(p.anim)%2===0)?(p.face>0?SPR.p1:SPR.p1f):(p.face>0?SPR.p2:SPR.p2f);
+    else img=p.face>0?SPR.p1:SPR.p1f;
+    ctx.drawImage(img,Math.round(p.x-2-cam),Math.round(p.y-2));
+  }
+
+  // HUD (pixel font)
+  var SH="#1A1420",FG="#FFFFFF",GD="#FFE9A8";
+  drawPx("SCORE",8,6,1,GD,SH);       drawPx(pad(G.score,6),8,15,1,FG,SH);
+  drawPx("COINS",78,6,1,GD,SH);      drawPx("×"+pad(G.coins,2),78,15,1,FG,SH);
+  drawPx("WORLD",136,6,1,GD,SH);     drawPx(WORLDNO[G.sec],136,15,1,FG,SH);
+  drawPx("TIME",192,6,1,GD,SH);      drawPx(pad(Math.max(0,Math.ceil(G.time)),3),192,15,1,G.time<=100?"#E06B5C":FG,SH);
+  drawPx("PENCILS",242,6,1,GD,SH);
+  ctx.drawImage(SPR.p1,242,14,7,9); drawPx("×"+G.lives,252,15,1,FG,SH);
+}
+
+/* ================= LOOP ================= */
+var last=0,acc=0,STEP=1000/60;
+function loop(t){
+  requestAnimationFrame(loop);
+  if(!last)last=t;
+  var dt=Math.min(t-last,100);
+  last=t;
+  if(mode==="play"||mode==="dying"||mode==="flag"){
+    acc+=dt;
+    while(acc>=STEP){update();acc-=STEP;}
+  }
+  draw();
+}
+requestAnimationFrame(loop);
+
+/* ================= FLOW / UI ================= */
+function startGame(){
+  ac();
+  newGame(chosenSec);
+  mode="play";
+  $("title").classList.add("hidden");
+  $("gameover").classList.add("hidden");
+  $("clear").classList.add("hidden");
+  SFX.start();
+  startMusic();
+}
+function toTitle(){
+  mode="title";
+  G=null;
+  stopMusic();
+  SFX.select();
+  $("gameover").classList.add("hidden");
+  $("clear").classList.add("hidden");
+  $("title").classList.remove("hidden");
+}
+$("startBtn").addEventListener("click",startGame);
+$("goRetry").addEventListener("click",startGame);
+$("clRetry").addEventListener("click",startGame);
+$("goTitle").addEventListener("click",toTitle);
+$("clTitle").addEventListener("click",toTitle);
+
+var worldBtns=document.querySelectorAll(".world-opt");
+worldBtns.forEach(function(b){
+  b.addEventListener("click",function(){
+    ac();SFX.select();
+    chosenSec=b.dataset.sec;
+    worldBtns.forEach(function(o){o.setAttribute("aria-pressed",String(o===b));});
+  });
+});
+
+$("muteBtn").addEventListener("click",function(){
+  muted=!muted;
+  mountPx(this,"SOUND "+(muted?"OFF":"ON"),1,"#9AA3C4");
+  this.setAttribute("aria-pressed",String(muted));
+});
+
+/* ---- pixel-font chrome: logo, titles, buttons ---- */
+(function(){
+  mountPx(document.querySelector(".logo .sup"),"SUPER",3,"#FFD9A0","#7A1F0C");
+  var h1=document.querySelector(".logo h1");
+  h1.textContent="";
+  h1.appendChild(pixelText("SIXTEEN",5,"#FFF3D0","#7A1F0C"));
+  h1.appendChild(document.createElement("br"));
+  h1.appendChild(pixelText("HUNDRED",5,"#FFF3D0","#7A1F0C"));
+  mountPx(document.querySelector(".logo .sub"),"SAT WORLD * SCORE ATTACK",2,"#FFD9A0","#7A1F0C");
+  mountPx($("startBtn"),"PRESS START",2,"#FFE9A8","#071638");
+  mountPx(document.querySelector("#gameover .go-title"),"GAME OVER",4,"#E06B5C","#3A0E08");
+  mountPx(document.querySelector("#clear .go-title"),"COURSE CLEAR!",4,"#FFE9A8","#5A4200");
+  mountPx($("goRetry"),"CONTINUE?",2,"#3A2000");
+  mountPx($("goTitle"),"TITLE SCREEN",2,"#9AA3C4");
+  mountPx($("clRetry"),"PLAY AGAIN",2,"#3A2000");
+  mountPx($("clTitle"),"TITLE SCREEN",2,"#9AA3C4");
+  mountPx($("qResume"),"JUMP BACK IN >",1,"#FAFBF3");
+  mountPx($("muteBtn"),"SOUND ON",1,"#9AA3C4");
+  mountPx(document.querySelector("#qmodal .eyebrow span:last-child"),"FORM NO. 1600-A",1,"#8A9878");
+})();
+
+/* keyboard */
+document.addEventListener("keydown",function(e){
+  if(e.metaKey||e.ctrlKey||e.altKey)return;
+  ac();
+  var k=e.key;
+  if(mode==="question"){
+    if(!G.curQ||G.curQ.done){
+      if(k==="Enter"||k===" "){e.preventDefault();if(G.curQ&&G.curQ.done)closeQuestion();}
+      return;
+    }
+    var map={a:0,b:1,c:2,d:3,"1":0,"2":1,"3":2,"4":3};
+    var lk=k.toLowerCase();
+    if(lk in map){e.preventDefault();answerQ(map[lk]);}
+    return;
+  }
+  if(mode==="title"&&k==="Enter"){
+    if(document.activeElement.tagName!=="BUTTON"){e.preventDefault();startGame();}
+    return;
+  }
+  if(mode==="gameover"&&k==="Enter"){startGame();return;}
+  if(mode==="clear"&&k==="Enter"){startGame();return;}
+  if(k==="ArrowLeft"){keys.l=true;e.preventDefault();}
+  else if(k==="ArrowRight"){keys.r=true;e.preventDefault();}
+  else if(k===" "||k==="ArrowUp"||k==="z"||k==="Z"){if(!keys.j)keys.jHeld=false;keys.j=true;e.preventDefault();}
+  else if(k==="m"||k==="M"){$("muteBtn").click();}
+});
+document.addEventListener("keyup",function(e){
+  var k=e.key;
+  if(k==="ArrowLeft")keys.l=false;
+  else if(k==="ArrowRight")keys.r=false;
+  else if(k===" "||k==="ArrowUp"||k==="z"||k==="Z"){keys.j=false;keys.jHeld=false;}
+});
+
+/* touch */
+function bindTouch(id,down,up){
+  var el=$(id);
+  el.addEventListener("pointerdown",function(e){e.preventDefault();ac();down();});
+  el.addEventListener("pointerup",function(e){e.preventDefault();up();});
+  el.addEventListener("pointercancel",up);
+  el.addEventListener("pointerleave",up);
+}
+bindTouch("tLeft",function(){keys.l=true;},function(){keys.l=false;});
+bindTouch("tRight",function(){keys.r=true;},function(){keys.r=false;});
+bindTouch("tJump",function(){keys.jHeld=false;keys.j=true;},function(){keys.j=false;keys.jHeld=false;});
+
+})();
+</script>
